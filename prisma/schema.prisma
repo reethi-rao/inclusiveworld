@@ -1,0 +1,162 @@
+// Inclusive World — data model
+// Uses Postgres (Neon) for both local dev and production. DATABASE_URL is
+// provisioned via the Vercel Marketplace (Neon). Enum-like fields are stored as
+// strings, validated in application code (see lib/constants.ts).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// A single role-tagged users table. The requested "list of teachers" and
+// "list of students" are simply filtered views of this table (by `role`),
+// which is cleaner than two physical tables and lets a person hold one login.
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         String    @default("STUDENT") // "TEACHER" | "STUDENT"
+  avatarUrl    String?
+  lastLogin    DateTime?
+  createdAt    DateTime  @default(now())
+
+  memberships    Membership[]
+  createdClasses Classroom[]      @relation("ClassroomCreator")
+  progress       LessonProgress[]
+  submissions    Submission[]
+  attempts       QuizAttempt[]
+  notifications  Notification[]
+}
+
+model Classroom {
+  id          String   @id @default(cuid())
+  name        String
+  subject     String?
+  emoji       String   @default("📚")
+  color       String   @default("#c0143c")
+  joinCode    String   @unique // 8-char alphanumeric
+  createdById String
+  createdAt   DateTime @default(now())
+
+  createdBy   User         @relation("ClassroomCreator", fields: [createdById], references: [id])
+  memberships Membership[]
+  lessons     Lesson[]
+  assignments Assignment[]
+  quizzes     Quiz[]
+}
+
+model Membership {
+  id           String    @id @default(cuid())
+  userId       String? // null while a teacher invite is pending
+  classroomId  String
+  roleInClass  String    @default("STUDENT") // "ADMIN" | "TEACHER" | "STUDENT"
+  status       String    @default("ACTIVE") // "ACTIVE" | "PENDING_INVITE"
+  invitedEmail String? // used for pending teacher invites
+  lastActiveAt DateTime?
+  createdAt    DateTime  @default(now())
+
+  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  classroom Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, classroomId])
+}
+
+model Lesson {
+  id          String   @id @default(cuid())
+  classroomId String
+  title       String
+  description String?
+  order       Int      @default(0)
+  slidesUrl   String? // Google Slides / Drive embed link
+  createdAt   DateTime @default(now())
+
+  classroom Classroom        @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  progress  LessonProgress[]
+}
+
+model LessonProgress {
+  id          String    @id @default(cuid())
+  lessonId    String
+  userId      String
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonId, userId])
+}
+
+model Assignment {
+  id          String    @id @default(cuid())
+  classroomId String
+  title       String
+  description String?
+  dueDate     DateTime?
+  slidesUrl   String?
+  points      Int       @default(100)
+  createdAt   DateTime  @default(now())
+
+  classroom   Classroom    @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  submissions Submission[]
+}
+
+model Submission {
+  id           String   @id @default(cuid())
+  assignmentId String
+  userId       String
+  linkUrl      String?
+  text         String?
+  submittedAt  DateTime @default(now())
+  grade        Int?
+  feedback     String?
+
+  assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([assignmentId, userId])
+}
+
+model Quiz {
+  id          String   @id @default(cuid())
+  classroomId String
+  title       String
+  description String?
+  // JSON string: [{ prompt, options: string[], answerIndex }]
+  questions   String   @default("[]")
+  createdAt   DateTime @default(now())
+
+  classroom Classroom     @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  attempts  QuizAttempt[]
+}
+
+model QuizAttempt {
+  id          String   @id @default(cuid())
+  quizId      String
+  userId      String
+  answers     String   @default("[]") // JSON array of selected indices
+  score       Int      @default(0)
+  completedAt DateTime @default(now())
+
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([quizId, userId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   @default("info")
+  message   String
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
