@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+/*
+  Inclusive World design system.
+  Brand palette derived from the reference screenshots:
+  deep crimson/maroon buttons, red→orange logo gradient, soft pink surfaces.
+*/
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  /* Brand crimson/maroon (primary buttons, active nav) */
+  --color-brand-50: #fdf2f5;
+  --color-brand-100: #fbe3e8;
+  --color-brand-200: #f7c6d1;
+  --color-brand-300: #ef9aad;
+  --color-brand-400: #e56684;
+  --color-brand-500: #d93a63;
+  --color-brand-600: #c0143c;
+  --color-brand-700: #b01238;
+  --color-brand-800: #900f2e;
+  --color-brand-900: #6f0c24;
+
+  /* Warm red→orange (logo gradient, accents) */
+  --color-accent-400: #f26b4e;
+  --color-accent-500: #e63946;
+  --color-accent-600: #d62839;
+
+  /* Soft pink surfaces */
+  --color-surface-pink: #fdecef;
+  --color-surface-pinklite: #fef6f8;
+
+  /* Status colors */
+  --color-status-active: #16a34a;
+  --color-status-active-bg: #dcfce7;
+  --color-status-pending: #d97706;
+  --color-status-pending-bg: #fef3c7;
+}
+
+:root {
+  --background: #f8f9fb;
+  --foreground: #1f2937;
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Thin, subtle scrollbars for panels */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #e5c7cf;
+  border-radius: 9999px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
