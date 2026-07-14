@@ -8,8 +8,10 @@ import {
   ArrowRight,
   CheckCircle2,
   Circle,
+  Clock,
   FileText,
   ClipboardCheck,
+  Upload,
   User as UserIcon,
   Presentation,
 } from "lucide-react";
@@ -19,6 +21,7 @@ import { UserMenu } from "@/components/layout/user-menu";
 import { Button } from "@/components/ui/button";
 import { cn, formatDate } from "@/lib/utils";
 import { toggleLessonComplete } from "@/lib/actions/lessons";
+import { LessonSteps, type Step } from "./lesson-steps";
 
 type Props = {
   classroom: { id: string; name: string; emoji: string; color: string };
@@ -30,6 +33,8 @@ type Props = {
     description: string | null;
     embedUrl: string | null;
     completed: boolean;
+    estimatedMinutes: number | null;
+    steps: Step[];
   };
   lessonList: {
     id: string;
@@ -173,9 +178,10 @@ export function LessonViewer(props: Props) {
                   <h1 className="text-2xl font-bold text-gray-900">
                     {lesson.title}
                   </h1>
-                  {lesson.description && (
-                    <p className="mt-1 max-w-2xl text-gray-500">
-                      {lesson.description}
+                  {lesson.estimatedMinutes && (
+                    <p className="mt-1 flex items-center gap-1.5 text-sm text-gray-500">
+                      <Clock className="h-4 w-4" />
+                      About {lesson.estimatedMinutes} minutes
                     </p>
                   )}
                 </div>
@@ -210,8 +216,40 @@ export function LessonViewer(props: Props) {
               )}
             </div>
 
+            {/* What this is about */}
+            {lesson.description && (
+              <section className="mt-6 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                <h2 className="text-xl font-bold text-gray-900">
+                  What this is about
+                </h2>
+                <p className="mt-2 max-w-3xl text-base leading-relaxed text-gray-600">
+                  {lesson.description}
+                </p>
+              </section>
+            )}
+
+            {/* Your steps */}
+            {lesson.steps.length > 0 && (
+              <div className="mt-6">
+                <LessonSteps classroomId={classroom.id} steps={lesson.steps} />
+              </div>
+            )}
+
+            {/* Turn in my homework — the one obvious next action for a student */}
+            {!isTeacher && props.assignments.length > 0 && (
+              <div className="mt-6">
+                <Button
+                  onClick={() => router.push(`${base}/assignments`)}
+                  className="px-6 py-3.5 text-base"
+                >
+                  <Upload className="h-5 w-5" />
+                  Turn in my homework
+                </Button>
+              </div>
+            )}
+
             {/* Prev / Next */}
-            <div className="mt-6 flex items-center justify-between">
+            <div className="mt-8 flex items-center justify-between border-t border-gray-100 pt-6">
               {prevId ? (
                 <Button variant="outline" onClick={() => router.push(`${base}/lesson/${prevId}`)}>
                   <ArrowLeft className="h-5 w-5" /> Previous Lesson
