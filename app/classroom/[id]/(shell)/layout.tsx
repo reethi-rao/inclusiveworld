@@ -1,6 +1,6 @@
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { TopBar } from "@/components/layout/top-bar";
-import { getClassroomContext } from "@/lib/queries";
+import { getClassroomContext, getTodoCount } from "@/lib/queries";
 
 export default async function ClassroomLayout({
   children,
@@ -11,10 +11,11 @@ export default async function ClassroomLayout({
 }) {
   const { id } = await params;
   const { user, isTeacher } = await getClassroomContext(id);
+  const todoCount = isTeacher ? 0 : await getTodoCount(user.id);
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <AppSidebar classroomId={id} isTeacher={isTeacher} />
+      <AppSidebar classroomId={id} isTeacher={isTeacher} todoCount={todoCount} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <TopBar
           user={{
