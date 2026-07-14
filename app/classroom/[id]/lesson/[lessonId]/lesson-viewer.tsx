@@ -18,14 +18,22 @@ import {
 import { Logo } from "@/components/brand/logo";
 import { LeafDecoration } from "@/components/brand/leaf-decoration";
 import { UserMenu } from "@/components/layout/user-menu";
+import { ThemePicker } from "@/components/layout/theme-picker";
 import { Button } from "@/components/ui/button";
 import { cn, formatDate } from "@/lib/utils";
 import { toggleLessonComplete } from "@/lib/actions/lessons";
+import type { ThemeId } from "@/lib/themes";
 import { LessonSteps, type Step } from "./lesson-steps";
 
 type Props = {
   classroom: { id: string; name: string; emoji: string; color: string };
-  user: { id: string; name: string; role: string; avatarUrl: string | null };
+  user: {
+    id: string;
+    name: string;
+    role: string;
+    avatarUrl: string | null;
+    theme: ThemeId;
+  };
   isTeacher: boolean;
   lesson: {
     id: string;
@@ -77,7 +85,7 @@ export function LessonViewer(props: Props) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f8f9fb]">
+    <div className="flex h-screen overflow-hidden">
       {/* Course-content sidebar */}
       <aside className="relative flex w-72 shrink-0 flex-col border-r border-gray-100 bg-white">
         <div className="px-5 py-4">
@@ -160,7 +168,10 @@ export function LessonViewer(props: Props) {
           >
             <ArrowLeft className="h-5 w-5" /> Back to Lessons
           </Link>
-          <UserMenu name={user.name} role={user.role} avatarUrl={user.avatarUrl} />
+          <div className="flex items-center gap-2">
+            <ThemePicker current={user.theme} />
+            <UserMenu name={user.name} role={user.role} avatarUrl={user.avatarUrl} />
+          </div>
         </header>
 
         <div className="flex flex-1 overflow-hidden">
@@ -269,7 +280,7 @@ export function LessonViewer(props: Props) {
 
           {/* Right rail: student assignment + quiz cards */}
           {showRail && (
-          <aside className="hidden w-80 shrink-0 flex-col gap-4 overflow-y-auto scrollbar-thin border-l border-gray-100 bg-[#f8f9fb] p-4 xl:flex">
+          <aside className="hidden w-80 shrink-0 flex-col gap-4 overflow-y-auto scrollbar-thin border-l border-gray-100 p-4 xl:flex">
             {!isTeacher && props.assignments.length > 0 && (
               <SidePanelSection title="Assignments" href={`${base}/assignments`}>
                 {props.assignments.map((a) => (
