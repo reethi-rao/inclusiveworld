@@ -22,6 +22,9 @@ model User {
   passwordHash String
   role         String    @default("STUDENT") // "TEACHER" | "STUDENT"
   avatarUrl    String?
+  // Background theme the user picked (see lib/themes.ts). Purely cosmetic —
+  // it only changes the page background, never text or surface colors.
+  theme        String    @default("default")
   lastLogin    DateTime?
   createdAt    DateTime  @default(now())
 
