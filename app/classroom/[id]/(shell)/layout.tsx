@@ -25,7 +25,7 @@ export default async function ClassroomLayout({
             avatarUrl: user.avatarUrl,
           }}
         />
-        <main className="flex-1 overflow-y-auto scrollbar-thin bg-[#f8f9fb]">
+        <main className="flex-1 overflow-y-auto scrollbar-thin">
           {children}
         </main>
       </div>
