@@ -12,6 +12,8 @@ async function main() {
   await prisma.quiz.deleteMany();
   await prisma.submission.deleteMany();
   await prisma.assignment.deleteMany();
+  await prisma.lessonStepProgress.deleteMany();
+  await prisma.lessonStep.deleteMany();
   await prisma.lessonProgress.deleteMany();
   await prisma.lesson.deleteMany();
   await prisma.membership.deleteMany();
@@ -125,15 +127,24 @@ async function main() {
     )
   );
 
+  // Every lesson gets the same gentle four-step rhythm: read, try, practise,
+  // turn in. Consistency is the point — students learn the shape once.
+  const defaultSteps = [
+    "Open the lesson and read each part slowly.",
+    "Try the example yourself.",
+    "Finish the practice task.",
+    "Turn in your work when you feel ready.",
+  ];
+
   const lessonData = [
-    { title: "Introduction", description: "Welcome to Python! What it is and why it matters." },
-    { title: "Variables & Data Types", description: "Storing and labeling information in Python." },
-    { title: "Control Flow", description: "Making decisions with if/else and loops." },
-    { title: "Functions", description: "Learn how functions work in Python, why they are useful, and how to create your own functions." },
-    { title: "Lists", description: "Working with ordered collections of items." },
-    { title: "Dictionaries", description: "Key–value pairs for structured data." },
-    { title: "Modules", description: "Reusing and organizing code across files." },
-    { title: "File Handling", description: "Reading from and writing to files." },
+    { title: "Introduction", description: "Welcome to Python! What it is and why it matters.", estimatedMinutes: 15 },
+    { title: "Variables & Data Types", description: "Storing and labeling information in Python.", estimatedMinutes: 20 },
+    { title: "Control Flow", description: "Making decisions with if/else and loops.", estimatedMinutes: 25 },
+    { title: "Functions", description: "Learn how functions work in Python, why they are useful, and how to create your own functions.", estimatedMinutes: 30 },
+    { title: "Asking Questions with input()", description: "Read each part slowly. Try the example. Then finish the practice task and turn it in when you feel ready.", estimatedMinutes: 20 },
+    { title: "Lists", description: "Working with ordered collections of items.", estimatedMinutes: 25 },
+    { title: "Dictionaries", description: "Key–value pairs for structured data.", estimatedMinutes: 25 },
+    { title: "Modules", description: "Reusing and organizing code across files.", estimatedMinutes: 20 },
   ];
 
   const lessons = [];
@@ -143,7 +154,11 @@ async function main() {
         classroomId: classroom.id,
         title: lessonData[i].title,
         description: lessonData[i].description,
+        estimatedMinutes: lessonData[i].estimatedMinutes,
         order: i,
+        steps: {
+          create: defaultSteps.map((text, order) => ({ text, order })),
+        },
       },
     });
     lessons.push(lesson);
@@ -169,6 +184,26 @@ async function main() {
         "Write three Python functions: greet(name), add(a, b), and is_even(n). Submit a link to your code (Google Doc, Colab, or Gist).",
       dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3),
       points: 100,
+    },
+  });
+
+  // Two more so the student To-do list shows a range of urgencies.
+  await prisma.assignment.create({
+    data: {
+      classroomId: classroom.id,
+      title: "Asking Questions with input()",
+      description: "Talk to the person using your program",
+      dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24),
+      points: 50,
+    },
+  });
+  await prisma.assignment.create({
+    data: {
+      classroomId: classroom.id,
+      title: "Lists Practice",
+      description: "Show the right items in the right order",
+      dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 6),
+      points: 50,
     },
   });
 
