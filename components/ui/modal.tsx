@@ -32,7 +32,7 @@ export function Modal({
         className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+      <div className="relative max-h-[90vh] w-full max-w-md overflow-y-auto scrollbar-thin rounded-2xl bg-white p-6 shadow-xl">
         <button
           onClick={onClose}
           aria-label="Close"
