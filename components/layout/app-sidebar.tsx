@@ -7,6 +7,7 @@ import {
   BookOpen,
   FileText,
   ClipboardCheck,
+  ListChecks,
   User as UserIcon,
   ChevronLeft,
 } from "lucide-react";
@@ -18,14 +19,17 @@ type NavItem = {
   label: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
+  badge?: number;
 };
 
 export function AppSidebar({
   classroomId,
   isTeacher,
+  todoCount = 0,
 }: {
   classroomId: string;
   isTeacher: boolean;
+  todoCount?: number;
 }) {
   const pathname = usePathname();
   const base = `/classroom/${classroomId}`;
@@ -37,6 +41,10 @@ export function AppSidebar({
     { label: "Lessons", href: `${base}/lessons`, icon: BookOpen },
     { label: "Assignments", href: `${base}/assignments`, icon: FileText },
     { label: "Quizzes", href: `${base}/quizzes`, icon: ClipboardCheck },
+    // Students get a cross-class "what do I still owe?" view; teachers don't.
+    ...(!isTeacher
+      ? [{ label: "To-do", href: "/todo", icon: ListChecks, badge: todoCount }]
+      : []),
     { label: "Profile", href: `/profile`, icon: UserIcon },
   ];
 
@@ -73,7 +81,12 @@ export function AppSidebar({
               )}
             >
               <Icon className="h-5 w-5" />
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {!!item.badge && (
+                <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-brand-600 px-1.5 text-xs font-bold text-white">
+                  {item.badge}
+                </span>
+              )}
             </Link>
           );
         })}
