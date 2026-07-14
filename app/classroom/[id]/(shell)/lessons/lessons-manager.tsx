@@ -218,6 +218,33 @@ function AddLessonModal({
           />
         </div>
         <div>
+          <Label htmlFor="steps">Steps for students (optional)</Label>
+          <Textarea
+            id="steps"
+            name="steps"
+            rows={4}
+            placeholder={
+              "Open the lesson and read each part slowly.\nTry the example yourself.\nFinish the practice task.\nTurn in your work when you feel ready."
+            }
+          />
+          <p className="mt-1 text-xs text-gray-400">
+            One step per line. Students tick these off as they go.
+          </p>
+        </div>
+        <div>
+          <Label htmlFor="estimatedMinutes">How long will it take? (optional)</Label>
+          <Input
+            id="estimatedMinutes"
+            name="estimatedMinutes"
+            type="number"
+            min={1}
+            placeholder="e.g. 20"
+          />
+          <p className="mt-1 text-xs text-gray-400">
+            Shown to students as &ldquo;About 20 minutes&rdquo;.
+          </p>
+        </div>
+        <div>
           <Label htmlFor="slidesUrl">Google Slides / Drive link (optional)</Label>
           <Input
             id="slidesUrl"
