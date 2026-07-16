@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { getClassroomContext } from "@/lib/queries";
 import { toEmbedUrl } from "@/lib/embed";
 import { normalizeTheme } from "@/lib/themes";
+import { normalizePrefs } from "@/lib/preferences";
 import { LessonViewer } from "./lesson-viewer";
 
 export default async function LessonViewerPage({
@@ -59,6 +60,7 @@ export default async function LessonViewerPage({
         role: user.role,
         avatarUrl: user.avatarUrl,
         theme: normalizeTheme(user.theme),
+        prefs: normalizePrefs(user),
       }}
       isTeacher={isTeacher}
       lesson={{
