@@ -8,6 +8,7 @@ import {
   FileText,
   ClipboardCheck,
   ListChecks,
+  Sparkles,
   User as UserIcon,
   ChevronLeft,
 } from "lucide-react";
@@ -43,7 +44,10 @@ export function AppSidebar({
     { label: "Quizzes", href: `${base}/quizzes`, icon: ClipboardCheck },
     // Students get a cross-class "what do I still owe?" view; teachers don't.
     ...(!isTeacher
-      ? [{ label: "To-do", href: "/todo", icon: ListChecks, badge: todoCount }]
+      ? [
+          { label: "To-do", href: "/todo", icon: ListChecks, badge: todoCount },
+          { label: "My Buddy", href: "/pet", icon: Sparkles },
+        ]
       : []),
     { label: "Profile", href: `/profile`, icon: UserIcon },
   ];
