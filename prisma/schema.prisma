@@ -25,6 +25,20 @@ model User {
   // Background theme the user picked (see lib/themes.ts). Purely cosmetic —
   // it only changes the page background, never text or surface colors.
   theme        String    @default("default")
+
+  // Reading/display accessibility preferences (see lib/preferences.ts). Applied
+  // on <html> in the root layout so they affect the whole app instantly.
+  textScale    String    @default("normal") // "normal" | "large" | "xlarge"
+  lineSpacing  String    @default("normal") // "normal" | "relaxed"
+  readingFont  String    @default("default") // "default" | "easy" (Atkinson Hyperlegible)
+
+  // "My Buddy" — a pet that grows as the student completes work. Its level/XP
+  // is DERIVED from real progress (see getPetState), never stored, so it can't
+  // desync. Only the cosmetic choices below are persisted.
+  petSpecies   String    @default("cat") // see lib/pet.ts
+  petName      String    @default("Buddy")
+  petColor     String    @default("#7c9cff")
+
   lastLogin    DateTime?
   createdAt    DateTime  @default(now())
 
