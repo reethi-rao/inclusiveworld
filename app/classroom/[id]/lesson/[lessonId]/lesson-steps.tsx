@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toggleLessonStep } from "@/lib/actions/lessons";
+import { XP } from "@/lib/pet";
 
 export type Step = {
   id: string;
@@ -26,6 +27,9 @@ export function LessonSteps({
 }) {
   const [steps, setSteps] = useState(initialSteps);
   const [, startTransition] = useTransition();
+  // Step ids currently showing the floating "+points" reward. The number is a
+  // token that changes each time so the CSS animation restarts.
+  const [flair, setFlair] = useState<Record<string, number>>({});
 
   const doneCount = steps.filter((s) => s.done).length;
   const allDone = doneCount === steps.length && steps.length > 0;
@@ -35,6 +39,20 @@ export function LessonSteps({
     setSteps((prev) =>
       prev.map((s) => (s.id === step.id ? { ...s, done: next } : s))
     );
+
+    // Only celebrate completing a step, not un-checking one.
+    if (next) {
+      const token = Date.now();
+      setFlair((f) => ({ ...f, [step.id]: token }));
+      setTimeout(() => {
+        setFlair((f) => {
+          if (f[step.id] !== token) return f; // a newer flair superseded it
+          const { [step.id]: _removed, ...rest } = f;
+          return rest;
+        });
+      }, 900);
+    }
+
     startTransition(async () => {
       const res = await toggleLessonStep(classroomId, step.id, next);
       if (!res.ok) {
@@ -66,7 +84,15 @@ export function LessonSteps({
 
       <ul className="mt-5 space-y-3">
         {steps.map((step, i) => (
-          <li key={step.id}>
+          <li key={step.id} className="relative">
+            {flair[step.id] && (
+              <span
+                key={flair[step.id]}
+                className="pointer-events-none absolute -top-1 left-9 z-10 select-none text-sm font-extrabold text-green-600 animate-xp-pop"
+              >
+                +{XP.step} ⭐
+              </span>
+            )}
             <button
               type="button"
               onClick={() => toggle(step)}
