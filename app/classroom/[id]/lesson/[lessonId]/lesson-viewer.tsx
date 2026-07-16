@@ -19,10 +19,13 @@ import { Logo } from "@/components/brand/logo";
 import { LeafDecoration } from "@/components/brand/leaf-decoration";
 import { UserMenu } from "@/components/layout/user-menu";
 import { ThemePicker } from "@/components/layout/theme-picker";
+import { ReadingSettings } from "@/components/layout/reading-settings";
+import { ReadAloud } from "@/components/ui/read-aloud";
 import { Button } from "@/components/ui/button";
 import { cn, formatDate } from "@/lib/utils";
 import { toggleLessonComplete } from "@/lib/actions/lessons";
 import type { ThemeId } from "@/lib/themes";
+import type { DisplayPrefs } from "@/lib/preferences";
 import { LessonSteps, type Step } from "./lesson-steps";
 
 type Props = {
@@ -33,6 +36,7 @@ type Props = {
     role: string;
     avatarUrl: string | null;
     theme: ThemeId;
+    prefs: DisplayPrefs;
   };
   isTeacher: boolean;
   lesson: {
@@ -169,6 +173,7 @@ export function LessonViewer(props: Props) {
             <ArrowLeft className="h-5 w-5" /> Back to Lessons
           </Link>
           <div className="flex items-center gap-2">
+            <ReadingSettings prefs={user.prefs} />
             <ThemePicker current={user.theme} />
             <UserMenu name={user.name} role={user.role} avatarUrl={user.avatarUrl} />
           </div>
@@ -230,9 +235,16 @@ export function LessonViewer(props: Props) {
             {/* What this is about */}
             {lesson.description && (
               <section className="mt-6 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-                <h2 className="text-xl font-bold text-gray-900">
-                  What this is about
-                </h2>
+                <div className="flex items-start justify-between gap-4">
+                  <h2 className="text-xl font-bold text-gray-900">
+                    What this is about
+                  </h2>
+                  <ReadAloud
+                    className="shrink-0"
+                    text={buildReadAloudText(lesson)}
+                    label="Read to me"
+                  />
+                </div>
                 <p className="mt-2 max-w-3xl text-base leading-relaxed text-gray-600">
                   {lesson.description}
                 </p>
@@ -342,6 +354,17 @@ export function LessonViewer(props: Props) {
       </div>
     </div>
   );
+}
+
+/** Assemble the spoken version of a lesson: title, overview, then each step. */
+function buildReadAloudText(lesson: Props["lesson"]): string {
+  const parts = [lesson.title];
+  if (lesson.description) parts.push(lesson.description);
+  if (lesson.steps.length > 0) {
+    parts.push("Your steps.");
+    lesson.steps.forEach((s, i) => parts.push(`Step ${i + 1}. ${s.text}`));
+  }
+  return parts.join(" ");
 }
 
 function SidePanelSection({
