@@ -2,8 +2,6 @@ import Link from "next/link";
 import { GraduationCap, BookOpen, Mail } from "lucide-react";
 import { requireUser } from "@/lib/auth-helpers";
 import { getUserClassrooms } from "@/lib/queries";
-import { TopBar } from "@/components/layout/top-bar";
-import { Logo } from "@/components/brand/logo";
 import { Card, Badge } from "@/components/ui/primitives";
 import { isTeacherRole } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
@@ -14,23 +12,8 @@ export default async function ProfilePage() {
   const classrooms = await getUserClassrooms(user.id);
 
   return (
-    <div className="min-h-screen">
-      <TopBar
-        user={{
-          id: user.id,
-          name: user.name,
-          role: user.role,
-          avatarUrl: user.avatarUrl,
-        }}
-        left={
-          <Link href="/dashboard">
-            <Logo width={185} />
-          </Link>
-        }
-      />
-
-      <div className="mx-auto max-w-3xl px-6 py-10">
-        <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
+    <div className="mx-auto max-w-3xl px-6 py-10">
+      <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
         <p className="mt-1 text-gray-500">Manage your account details.</p>
 
         <div className="mt-6 grid gap-6">
@@ -93,6 +76,5 @@ export default async function ProfilePage() {
           </Card>
         </div>
       </div>
-    </div>
   );
 }

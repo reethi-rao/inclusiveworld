@@ -1,40 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Users,
-  BookOpen,
-  FileText,
-  ClipboardCheck,
-  ListChecks,
-  Sparkles,
-  GraduationCap,
-  User as UserIcon,
-  ChevronLeft,
-} from "lucide-react";
+import { Home, ListChecks, Sparkles, GraduationCap, User as UserIcon } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { LeafDecoration } from "@/components/brand/leaf-decoration";
 import { SidebarNav, type NavItem } from "./sidebar-nav";
 
-export function AppSidebar({
-  classroomId,
+/**
+ * Left nav for pages outside any one classroom (Dashboard, To-do, Scores, My
+ * Buddy, Profile) — same shell as AppSidebar so moving between a classroom
+ * and these personal pages doesn't drop the navigation a student's relying
+ * on. Lessons/Assignments/Quizzes/People aren't here since those only make
+ * sense scoped to a specific classroom.
+ */
+export function GlobalSidebar({
   isTeacher,
   todoCount = 0,
 }: {
-  classroomId: string;
   isTeacher: boolean;
   todoCount?: number;
 }) {
-  const base = `/classroom/${classroomId}`;
-
   const items: NavItem[] = [
-    ...(isTeacher
-      ? [{ label: "People", href: `${base}/people`, icon: Users }]
-      : []),
-    { label: "Lessons", href: `${base}/lessons`, icon: BookOpen },
-    { label: "Assignments", href: `${base}/assignments`, icon: FileText },
-    { label: "Quizzes", href: `${base}/quizzes`, icon: ClipboardCheck },
-    // Students get a cross-class "what do I still owe?" view; teachers don't.
+    { label: "Dashboard", href: "/dashboard", icon: Home },
     ...(!isTeacher
       ? [
           { label: "To-do", href: "/todo", icon: ListChecks, badge: todoCount },
@@ -42,7 +29,7 @@ export function AppSidebar({
           { label: "My Buddy", href: "/pet", icon: Sparkles },
         ]
       : []),
-    { label: "Profile", href: `/profile`, icon: UserIcon },
+    { label: "Profile", href: "/profile", icon: UserIcon },
   ];
 
   return (
@@ -52,14 +39,6 @@ export function AppSidebar({
           <Logo width={180} />
         </Link>
       </div>
-
-      <Link
-        href="/dashboard"
-        className="mx-4 mb-2 flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-brand-600"
-      >
-        <ChevronLeft className="h-3.5 w-3.5" />
-        All classes
-      </Link>
 
       <SidebarNav items={items} />
 

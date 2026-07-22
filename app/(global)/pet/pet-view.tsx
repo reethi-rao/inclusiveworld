@@ -1,7 +1,16 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
-import { BookOpen, CheckSquare, FileText, HelpCircle, Check } from "lucide-react";
+import {
+  BookOpen,
+  CheckSquare,
+  FileText,
+  HelpCircle,
+  Check,
+  ClipboardCheck,
+  ArrowRight,
+} from "lucide-react";
 import { PetAvatar } from "@/components/pet/pet-avatar";
 import { Card, Input } from "@/components/ui/primitives";
 import { Button } from "@/components/ui/button";
@@ -12,7 +21,7 @@ import {
   XP,
   type PetSpecies,
 } from "@/lib/pet";
-import type { PetState } from "@/lib/queries";
+import type { PetState, PracticeSuggestion } from "@/lib/queries";
 import { updatePet } from "@/lib/actions/preferences";
 
 export function PetView({ pet }: { pet: PetState }) {
@@ -22,7 +31,7 @@ export function PetView({ pet }: { pet: PetState }) {
   const [savedName, setSavedName] = useState(pet.name);
   const [, startTransition] = useTransition();
 
-  const { progress, counts } = pet;
+  const { progress, counts, encouragement } = pet;
   const { stage, isMaxed, toNext, xp, nextStageXp } = progress;
 
   function save(next: Partial<{ species: PetSpecies; color: string; name: string }>) {
@@ -53,7 +62,9 @@ export function PetView({ pet }: { pet: PetState }) {
       <div>
         <h1 className="text-3xl font-bold text-gray-900">My Buddy</h1>
         <p className="mt-1 text-gray-500">
-          {savedName} grows every time you finish something. Keep going!
+          {encouragement
+            ? `${savedName} noticed a dip in ${encouragement.className} — here's how they're cheering you on.`
+            : `${savedName} grows every time you finish something. Keep going!`}
         </p>
       </div>
 
@@ -72,6 +83,12 @@ export function PetView({ pet }: { pet: PetState }) {
               Level {stage.level} · {stage.name} Buddy
             </p>
           </div>
+
+          {encouragement && (
+            <p className="max-w-sm rounded-xl bg-white px-4 py-3 text-center text-sm font-medium text-gray-700 shadow-sm">
+              &ldquo;{encouragement.message}&rdquo;
+            </p>
+          )}
         </div>
 
         <div className="px-6 py-5">
@@ -91,6 +108,23 @@ export function PetView({ pet }: { pet: PetState }) {
           </div>
         </div>
       </Card>
+
+      {/* Practice suggestions, only when My Buddy has noticed a dip — always
+          framed as an invitation, never a requirement (see lib/grades.ts:
+          no shaming anywhere in this system). */}
+      {encouragement && encouragement.suggestions.length > 0 && (
+        <Card className="p-5">
+          <h2 className="font-bold text-gray-900">Want more practice?</h2>
+          <p className="text-sm text-gray-500">
+            No pressure — pick one whenever you&apos;re ready.
+          </p>
+          <ul className="mt-4 space-y-3">
+            {encouragement.suggestions.map((s) => (
+              <PracticeRow key={`${s.kind}-${s.title}`} suggestion={s} />
+            ))}
+          </ul>
+        </Card>
+      )}
 
       {/* How to earn */}
       <Card className="p-5">
@@ -197,6 +231,30 @@ export function PetView({ pet }: { pet: PetState }) {
         </div>
       </Card>
     </div>
+  );
+}
+
+function PracticeRow({ suggestion }: { suggestion: PracticeSuggestion }) {
+  const Icon = suggestion.kind === "quiz" ? ClipboardCheck : BookOpen;
+  return (
+    <li className="flex items-center gap-3 rounded-xl border border-gray-100 p-3">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+        <Icon className="h-5 w-5" aria-hidden />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold text-gray-900">{suggestion.title}</p>
+        <p className="text-xs text-gray-500">
+          {suggestion.className}
+          {suggestion.minutes != null && <> · {suggestion.minutes} min</>}
+        </p>
+      </div>
+      <Link
+        href={suggestion.href}
+        className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-xl border border-brand-600 bg-white px-3 text-sm font-semibold text-brand-700 transition-colors hover:bg-brand-50"
+      >
+        Start <ArrowRight className="h-4 w-4" />
+      </Link>
+    </li>
   );
 }
 

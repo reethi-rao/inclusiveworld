@@ -4,24 +4,33 @@ import {
   BookOpen,
   FileText,
   GraduationCap,
-  ListChecks,
-  ChevronRight,
+  ClipboardCheck,
+  PartyPopper,
 } from "lucide-react";
 import { requireUser } from "@/lib/auth-helpers";
-import { getUserClassrooms, getTodoCount, getPetState } from "@/lib/queries";
+import {
+  getUserClassrooms,
+  getTodoItems,
+  getScoresData,
+  type TodoItem,
+} from "@/lib/queries";
+import { dueInfo, type DueTone } from "@/lib/due";
 import { TopBar } from "@/components/layout/top-bar";
 import { Logo } from "@/components/brand/logo";
 import { Card, EmptyState, Badge } from "@/components/ui/primitives";
-import { PetAvatar } from "@/components/pet/pet-avatar";
+import { cn } from "@/lib/utils";
 import { DashboardActions } from "./dashboard-actions";
+import { ScoreboardWidget } from "./scoreboard-widget";
 import { isTeacherRole } from "@/lib/constants";
+
+const DASHBOARD_TODO_LIMIT = 4;
 
 export default async function DashboardPage() {
   const user = await requireUser();
   const classrooms = await getUserClassrooms(user.id);
   const isTeacher = user.role === "TEACHER";
-  const todoCount = isTeacher ? 0 : await getTodoCount(user.id);
-  const pet = isTeacher ? null : await getPetState(user.id);
+  const todoItems = isTeacher ? [] : await getTodoItems(user.id);
+  const scores = isTeacher ? null : await getScoresData(user.id);
 
   return (
     <div className="min-h-screen">
@@ -51,53 +60,40 @@ export default async function DashboardPage() {
         </div>
 
         {!isTeacher && classrooms.length > 0 && (
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            <Link href="/todo" className="block">
-              <Card className="flex h-full items-center gap-4 p-5 transition-shadow hover:shadow-md">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
-                  <ListChecks className="h-6 w-6" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h2 className="font-bold text-gray-900">My To-do</h2>
-                  <p className="text-sm text-gray-500">
-                    {todoCount === 0
-                      ? "You're all caught up. Nothing to turn in."
-                      : `You have ${todoCount} thing${
-                          todoCount === 1 ? "" : "s"
-                        } to turn in. One at a time.`}
-                  </p>
-                </div>
-                {todoCount > 0 && (
-                  <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-brand-600 px-2 text-sm font-bold text-white">
-                    {todoCount}
-                  </span>
+          <div className="mt-8 grid gap-5 lg:grid-cols-2 lg:items-start">
+            <Card className="p-6">
+              <div className="flex items-baseline justify-between gap-2">
+                <h2 className="text-lg font-bold text-gray-900">What&apos;s left</h2>
+                {todoItems.length > DASHBOARD_TODO_LIMIT && (
+                  <Link
+                    href="/todo"
+                    className="text-sm font-semibold text-brand-600 hover:underline"
+                  >
+                    See all {todoItems.length}
+                  </Link>
                 )}
-                <ChevronRight className="h-5 w-5 shrink-0 text-gray-300" />
-              </Card>
-            </Link>
+              </div>
 
-            {pet && (
-              <Link href="/pet" className="block">
-                <Card className="flex h-full items-center gap-4 p-5 transition-shadow hover:shadow-md">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-brand-50">
-                    <PetAvatar
-                      species={pet.species}
-                      color={pet.color}
-                      level={pet.progress.stage.level}
-                      size={52}
-                    />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h2 className="font-bold text-gray-900">My Buddy</h2>
-                    <p className="text-sm text-gray-500">
-                      {pet.name} is a Level {pet.progress.stage.level}{" "}
-                      {pet.progress.stage.name} Buddy.
-                    </p>
-                  </div>
-                  <ChevronRight className="h-5 w-5 shrink-0 text-gray-300" />
-                </Card>
-              </Link>
-            )}
+              {todoItems.length === 0 ? (
+                <div className="mt-4">
+                  <EmptyState
+                    icon={<PartyPopper className="h-6 w-6" />}
+                    title="You're all caught up!"
+                    description="Nothing to turn in right now."
+                  />
+                </div>
+              ) : (
+                <ul className="mt-4 space-y-3">
+                  {todoItems.slice(0, DASHBOARD_TODO_LIMIT).map((item) => (
+                    <li key={`${item.kind}-${item.id}`}>
+                      <TodoPreviewRow item={item} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Card>
+
+            {scores && <ScoreboardWidget scores={scores} />}
           </div>
         )}
 
@@ -122,6 +118,36 @@ export default async function DashboardPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+const dueTextTones: Record<DueTone, string> = {
+  overdue: "text-brand-600",
+  soon: "text-amber-600",
+  later: "text-amber-600",
+  none: "text-gray-400",
+};
+
+/** Compact row for the dashboard's "What's left" preview — a lighter cousin of TodoRow on the full /todo page. */
+function TodoPreviewRow({ item }: { item: TodoItem }) {
+  const due = dueInfo(item.dueDate);
+  const Icon = item.kind === "quiz" ? ClipboardCheck : FileText;
+
+  return (
+    <Link href={item.href}>
+      <div className="flex items-center gap-3 rounded-xl border border-gray-100 p-3 transition-shadow hover:shadow-md">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-pinklite text-brand-600">
+          <Icon className="h-4 w-4" aria-hidden />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-bold text-gray-900">{item.title}</p>
+          <p className="truncate text-xs text-gray-500">{item.className}</p>
+        </div>
+        <span className={cn("shrink-0 text-xs font-bold", dueTextTones[due.tone])}>
+          {item.kind === "quiz" && !item.dueDate ? "Quiz" : due.label}
+        </span>
+      </div>
+    </Link>
   );
 }
 

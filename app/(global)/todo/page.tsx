@@ -3,8 +3,6 @@ import { ChevronRight, ClipboardCheck, FileText, PartyPopper } from "lucide-reac
 import { requireUser } from "@/lib/auth-helpers";
 import { getTodoItems, type TodoItem } from "@/lib/queries";
 import { dueInfo, type DueTone } from "@/lib/due";
-import { TopBar } from "@/components/layout/top-bar";
-import { Logo } from "@/components/brand/logo";
 import { Card, EmptyState } from "@/components/ui/primitives";
 import { cn } from "@/lib/utils";
 
@@ -13,44 +11,28 @@ export default async function TodoPage() {
   const items = await getTodoItems(user.id);
 
   return (
-    <div className="min-h-screen">
-      <TopBar
-        user={{
-          id: user.id,
-          name: user.name,
-          role: user.role,
-          avatarUrl: user.avatarUrl,
-        }}
-        left={
-          <Link href="/dashboard">
-            <Logo width={185} />
-          </Link>
-        }
-      />
+    <div className="mx-auto max-w-4xl px-6 py-10">
+      <h1 className="text-3xl font-bold text-gray-900">My To-do</h1>
+      <p className="mt-1 text-gray-500">
+        Everything you still need to turn in. One at a time.
+      </p>
 
-      <div className="mx-auto max-w-4xl px-6 py-10">
-        <h1 className="text-3xl font-bold text-gray-900">My To-do</h1>
-        <p className="mt-1 text-gray-500">
-          Everything you still need to turn in. One at a time.
-        </p>
-
-        <div className="mt-8">
-          {items.length === 0 ? (
-            <EmptyState
-              icon={<PartyPopper className="h-7 w-7" />}
-              title="You're all caught up!"
-              description="Nothing to turn in right now. Enjoy the break — new work will show up here when your teacher adds it."
-            />
-          ) : (
-            <ul className="space-y-3">
-              {items.map((item) => (
-                <li key={`${item.kind}-${item.id}`}>
-                  <TodoRow item={item} />
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+      <div className="mt-8">
+        {items.length === 0 ? (
+          <EmptyState
+            icon={<PartyPopper className="h-7 w-7" />}
+            title="You're all caught up!"
+            description="Nothing to turn in right now. Enjoy the break — new work will show up here when your teacher adds it."
+          />
+        ) : (
+          <ul className="space-y-3">
+            {items.map((item) => (
+              <li key={`${item.kind}-${item.id}`}>
+                <TodoRow item={item} />
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );
